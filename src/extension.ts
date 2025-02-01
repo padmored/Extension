@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('submitty.getToken', async () => {
+	let getToken = vscode.commands.registerCommand('submitty.getToken', async () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		try {
@@ -56,18 +56,52 @@ export function activate(context: vscode.ExtensionContext) {
 			const status = response.data.status;
 			if(status === 'success') {
 				const token = response.data.data.token;
-            	vscode.window.showInformationMessage(`Token: ${token}`);
+				await context.secrets.store("token", token);
+            	vscode.window.showInformationMessage("Token received");
 			}
 			else {
 				vscode.window.showWarningMessage(response.data.message);
 			}
             
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to get token: ${error}`);
+            vscode.window.showErrorMessage(`${error}`);
         }
 	});
 
-	context.subscriptions.push(disposable);
+	let getCourses = vscode.commands.registerCommand('submitty.getCourses', async () => {
+		
+		// get the stored token
+		let token = await context.secrets.get("token");
+
+		// validate token
+		if(!token) {
+			vscode.window.showWarningMessage("Token not found, attempting to get token");
+			await vscode.commands.executeCommand('submitty.getToken');
+			token = await context.secrets.get("token");
+			if (!token) {
+				vscode.window.showErrorMessage("Failed to get token.");
+				return;
+			}
+		}
+
+		// make the GET req for courses
+		const response = await axios.get('http://localhost:1511/api/courses', {
+			headers: { Authorization: token }
+		});
+
+		// check if successful
+		const status = response.data.status;
+		if(status === 'success') {
+			// TODO
+		}
+		else {
+			vscode.window.showWarningMessage(response.data.message);
+		}
+
+	});
+
+	context.subscriptions.push(getToken);
+	context.subscriptions.push(getCourses);
 }
 
 // This method is called when your extension is deactivated

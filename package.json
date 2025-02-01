@@ -16,6 +16,10 @@
       {
         "command": "submitty.getToken",
         "title": "Get Token"
+      },
+      {
+        "command": "submitty.getCourses",
+        "title": "Get Courses"
       }
     ]
   },
