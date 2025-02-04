@@ -15,13 +15,33 @@
     "commands": [
       {
         "command": "submitty.getToken",
-        "title": "Get Token"
+        "title": "Get Token",
+        "category": "Submitty"
       },
       {
         "command": "submitty.getCourses",
-        "title": "Get Courses"
+        "title": "Get Courses",
+        "category": "Submitty"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "submitty",
+          "title": "Submitty",
+          "icon": "./media/00-original.svg"
+        }
+      ]
+    },
+    "views": {
+      "submitty": [
+        {
+          "type": "webview",
+          "id": "submitty-sidebar",
+          "name": "Sidebar"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

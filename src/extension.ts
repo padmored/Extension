@@ -100,9 +100,47 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
+	const provider = new SubmittyViewProvider(context.extensionUri);
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider('submitty-sidebar', provider));
+
 	context.subscriptions.push(getToken);
 	context.subscriptions.push(getCourses);
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
+
+class SubmittyViewProvider implements vscode.WebviewViewProvider {
+	constructor(private readonly _extensionUri: vscode.Uri) {}
+
+	private view?: vscode.WebviewView;
+
+	resolveWebviewView(
+		webviewView: vscode.WebviewView,
+		webViewContext: vscode.WebviewViewResolveContext,
+		token: vscode.CancellationToken
+	) {
+		this.view = webviewView;
+
+		webviewView.webview.options = {
+			enableScripts: true,
+			localResourceRoots: [this._extensionUri]
+		};
+
+		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+	}
+
+	private _getHtmlForWebview(webview: vscode.Webview) {
+		return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Submitty View</title>
+        </head>
+        <body>
+            <h1>Hello, World!</h1>
+        </body>
+        </html>`;
+	}
+}
