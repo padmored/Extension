@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 			token = await context.secrets.get("token");
 			if (!token) {
 				vscode.window.showErrorMessage("Failed to get token.");
-				return;
+				return {"archived_courses": [], "dropped_courses": [], "unarchived_courses": []};
 			}
 		}
 
@@ -92,7 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// check if successful
 		const status = response.data.status;
 		if(status === 'success') {
-			// TODO
+			return response.data.data || {"archived_courses": [], "dropped_courses": [], "unarchived_courses": []};
 		}
 		else {
 			vscode.window.showWarningMessage(response.data.message);
@@ -100,7 +100,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	const provider = new SubmittyViewProvider(context.extensionUri);
+	const provider = new SubmittyViewProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider('submitty-sidebar', provider));
 
 	context.subscriptions.push(getToken);
@@ -111,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 class SubmittyViewProvider implements vscode.WebviewViewProvider {
-	constructor(private readonly _extensionUri: vscode.Uri) {}
+	constructor(private readonly _extensionUri: vscode.Uri, public context: vscode.ExtensionContext) {}
 
 	private view?: vscode.WebviewView;
 
@@ -128,18 +128,42 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 		};
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+		webviewView.webview.onDidReceiveMessage(async (message) => {
+			switch (message.type) {
+                case "get-courses": {
+					const courses = await vscode.commands.executeCommand('submitty.getCourses');
+					webviewView.webview.postMessage({ type: "courses", courses });
+                    break;
+                }
+			}
+		});
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
+
+		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "css", "vscode.css"));
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "js", "submitty-sidebar.js"));
+
 		return `<!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Submitty View</title>
+			<link href="${styleVSCodeUri}" rel="stylesheet">
         </head>
         <body>
-            <h1>Hello, World!</h1>
+			<button type="button" class="get-courses">Get Courses</button>
+
+			<h1>Courses</h1>
+			<h2>Archived</h2>
+			<ul class="archived-course-list"></ul>
+			<h2>Dropped</h2>
+			<ul class="dropped-course-list"></ul>
+			<h2>Unarchived</h2>
+			<ul class="unarchived-course-list"></ul>
+			<script src="${scriptUri}"></script>
         </body>
         </html>`;
 	}
