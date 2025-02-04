@@ -1,18 +1,38 @@
 (function () {
     const vscode = acquireVsCodeApi();
 
-    const getCourses = document.querySelector('.get-courses');
+    const login = document.querySelector('.login');
+
+    // course data
+    const courseTitle = document.querySelector('.course-title');
+
+    // containers
+    const loginContainer = document.querySelector('.login-container');
+    const coursesContainer = document.querySelector('.courses-container');
+    const courseContainer = document.querySelector('.course-container');
     // course type lists
-    const archivedCourseList = document.querySelector('.archived-course-list');
-    const droppedCourseList = document.querySelector('.dropped-course-list');
-    const unarchivedCourseList = document.querySelector('.unarchived-course-list');
+    const archivedCourseContainer = document.querySelector('.archived-course-container');
+    const droppedCourseContainer = document.querySelector('.dropped-course-container');
+    const unarchivedCourseContainer = document.querySelector('.unarchived-course-container');
 
-    getCourses.addEventListener('click', getCoursesClicked);
+    login.addEventListener('click', loginClicked);
 
-    function getCoursesClicked() {
+    function loginClicked() {
         vscode.postMessage({
-            type: 'get-courses',
+            type: 'login',
             value: 'clicked'
+        });
+    }
+
+    function courseClicked(event) {
+        const button = event.target;
+        const course = button.dataset.name;
+        const semester = button.dataset.semester;
+    
+        vscode.postMessage({
+            type: "course",
+            course: course,
+            semester: semester
         });
     }
 
@@ -22,27 +42,69 @@
             case "courses":
                 const { archived_courses, dropped_courses, unarchived_courses } = message.courses;
 
+                // show courses, hide login
+                loginContainer.style.display = "none";
+                coursesContainer.style.display = "block";
+
                 // reset the lists
-                archivedCourseList.replaceChildren();
-                droppedCourseList.replaceChildren();
-                unarchivedCourseList.replaceChildren();
+                archivedCourseContainer.replaceChildren();
+                droppedCourseContainer.replaceChildren();
+                unarchivedCourseContainer.replaceChildren();
 
                 // update the lists
+                if(archived_courses.length === 0) {
+                    const noCoursesMessage = document.createElement("p");
+                    noCoursesMessage.textContent = "No archived courses available.";
+                    archivedCourseContainer.appendChild(noCoursesMessage);
+                }
                 archived_courses.forEach(course => {
-                    const li = document.createElement("li");
-                    li.textContent = course.title;
-                    archivedCourseList.appendChild(li);
+                    const button = document.createElement("button");
+                    button.textContent = course.title;
+                    button.dataset.name = course.title;
+                    button.dataset.semester = course.semester;
+                    button.addEventListener("click", courseClicked);
+                    archivedCourseContainer.appendChild(button);
                 });
+
+                if(dropped_courses.length === 0) {
+                    const noCoursesMessage = document.createElement("p");
+                    noCoursesMessage.textContent = "No dropped courses available.";
+                    droppedCourseContainer.appendChild(noCoursesMessage);
+                }
                 dropped_courses.forEach(course => {
-                    const li = document.createElement("li");
-                    li.textContent = course.title;
-                    droppedCourseList.appendChild(li);
+                    const button = document.createElement("button");
+                    button.textContent = course.title;
+                    button.dataset.name = course.title;
+                    button.dataset.semester = course.semester;
+                    button.addEventListener("click", courseClicked);
+                    droppedCourseContainer.appendChild(button);
                 });
+
+                if(unarchived_courses.length === 0) {
+                    const noCoursesMessage = document.createElement("p");
+                    noCoursesMessage.textContent = "No unarchived courses available.";
+                    unarchivedCourseContainer.appendChild(noCoursesMessage);
+                }
                 unarchived_courses.forEach(course => {
-                    const li = document.createElement("li");
-                    li.textContent = course.title;
-                    unarchivedCourseList.appendChild(li);
+                    const button = document.createElement("button");
+                    button.textContent = course.title;
+                    button.dataset.name = course.title;
+                    button.dataset.semester = course.semester;
+                    button.addEventListener("click", courseClicked);
+                    unarchivedCourseContainer.appendChild(button);
                 });
+
+                break;
+
+            case "course":
+                const course = message.course;
+                const semester = message.semester;
+
+                // show course, hide courses
+                coursesContainer.style.display = "none";
+                courseContainer.style.display = "block";
+
+                courseTitle.textContent = course + ", " + semester;
 
                 break;
         }

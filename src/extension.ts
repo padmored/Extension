@@ -131,11 +131,24 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(async (message) => {
 			switch (message.type) {
-                case "get-courses": {
+                case "login": {
+					this.context.secrets.delete("token");
+					await vscode.commands.executeCommand('submitty.getToken');
+					let token = await this.context.secrets.get("token");
+					if(!token) {
+						// vscode.window.showErrorMessage('Login failed, please try again');
+						break;
+					}
 					const courses = await vscode.commands.executeCommand('submitty.getCourses');
 					webviewView.webview.postMessage({ type: "courses", courses });
                     break;
                 }
+				case "course": {
+					let course = message.course;
+					let semester = message.semester;
+					webviewView.webview.postMessage({ type: "course", course, semester });
+					break;
+				}
 			}
 		});
 	}
@@ -154,15 +167,22 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			<link href="${styleVSCodeUri}" rel="stylesheet">
         </head>
         <body>
-			<button type="button" class="get-courses">Get Courses</button>
-
-			<h1>Courses</h1>
-			<h2>Archived</h2>
-			<ul class="archived-course-list"></ul>
-			<h2>Dropped</h2>
-			<ul class="dropped-course-list"></ul>
-			<h2>Unarchived</h2>
-			<ul class="unarchived-course-list"></ul>
+			<div class="login-container" style="display: block;">
+				<p>Login to Submitty from the Submitty extension.</p>
+				<button type="button" class="login">Login</button>
+			</div>
+			<div class="courses-container" style="display: none;">
+				<h1>My Courses</h1>
+				<h2>Archived</h2>
+				<div class="archived-course-container"></div>
+				<h2>Dropped</h2>
+				<div class="dropped-course-container"></div>
+				<h2>Unarchived</h2>
+				<div class="unarchived-course-container"></div>
+			</div>
+			<div class="course-container" style="display: none;">
+				<h1 class="course-title">Course Name, Semester</h1>
+			</div>
 			<script src="${scriptUri}"></script>
         </body>
         </html>`;

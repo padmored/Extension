@@ -89,3 +89,7 @@ input::placeholder,
 textarea::placeholder {
 	color: var(--vscode-input-placeholderForeground);
 }
+
+div button {
+	margin: var(--input-padding-vertical);
+  }
