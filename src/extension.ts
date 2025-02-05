@@ -57,6 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if(status === 'success') {
 				const token = response.data.data.token;
 				await context.secrets.store("token", token);
+				await context.secrets.store("user_id", userId);
             	vscode.window.showInformationMessage("Token received");
 			}
 			else {
@@ -100,11 +101,53 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
+	let getGradeables = vscode.commands.registerCommand('submitty.getGradeables', async () => {
+		// get the stored token
+		let token = await context.secrets.get("token");
+
+		// validate token
+		if(!token) {
+			vscode.window.showWarningMessage("Token not found, attempting to get token");
+			await vscode.commands.executeCommand('submitty.getToken');
+			token = await context.secrets.get("token");
+			if (!token) {
+				vscode.window.showErrorMessage("Failed to get token.");
+				return [];
+			}
+		}
+
+		// fetch params for request from secrets
+		let user_id = await context.secrets.get("user_id");
+		let course = await context.secrets.get("course");
+		let semester = await context.secrets.get("semester");
+
+		// make the GET req for gradeables
+		const response = await axios.get('http://localhost:1511/api/test/get/gradeables', {
+			headers: { Authorization: token },
+			params: {
+				user_id: user_id,
+				course: course,
+				semester: semester
+			}
+		});
+
+		// check if successful
+		const status = response.data.status;
+		if(status === 'success') {
+			return response.data.data[1] || [];
+		}
+		else {
+			vscode.window.showWarningMessage(response.data.message);
+		}
+
+	});
+
 	const provider = new SubmittyViewProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider('submitty-sidebar', provider));
 
 	context.subscriptions.push(getToken);
 	context.subscriptions.push(getCourses);
+	context.subscriptions.push(getGradeables);
 }
 
 // This method is called when your extension is deactivated
@@ -146,7 +189,12 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				case "course": {
 					let course = message.course;
 					let semester = message.semester;
-					webviewView.webview.postMessage({ type: "course", course, semester });
+					// push course, semester to secrets
+					this.context.secrets.store("course",course);
+					this.context.secrets.store("semester",semester);
+					const gradeables = await vscode.commands.executeCommand('submitty.getGradeables');
+
+					webviewView.webview.postMessage({ type: "course", course, semester, gradeables });
 					break;
 				}
 			}
@@ -182,6 +230,8 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			</div>
 			<div class="course-container" style="display: none;">
 				<h1 class="course-title">Course Name, Semester</h1>
+				<h2>Gradeables</h2>
+				<div class="gradeables-container"></div>
 			</div>
 			<script src="${scriptUri}"></script>
         </body>

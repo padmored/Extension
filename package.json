@@ -22,6 +22,11 @@
         "command": "submitty.getCourses",
         "title": "Get Courses",
         "category": "Submitty"
+      },
+      {
+        "command": "submitty.getGradeables",
+        "title": "Get Gradeables",
+        "category": "Submitty"
       }
     ],
     "viewsContainers": {

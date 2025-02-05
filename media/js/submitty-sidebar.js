@@ -10,6 +10,7 @@
     const loginContainer = document.querySelector('.login-container');
     const coursesContainer = document.querySelector('.courses-container');
     const courseContainer = document.querySelector('.course-container');
+    const gradeablesContainer = document.querySelector('.gradeables-container');
     // course type lists
     const archivedCourseContainer = document.querySelector('.archived-course-container');
     const droppedCourseContainer = document.querySelector('.dropped-course-container');
@@ -36,6 +37,16 @@
         });
     }
 
+    function gradeableClicked(event) {
+        const button = event.target;
+        const gradeable_id = button.dataset.gradeable_id;
+    
+        vscode.postMessage({
+            type: "gradeable",
+            gradeable_id: gradeable_id
+        });
+    }
+
     window.addEventListener("message", async (event) => {
         const message = event.data;
         switch (message.type) {
@@ -46,12 +57,12 @@
                 loginContainer.style.display = "none";
                 coursesContainer.style.display = "block";
 
-                // reset the lists
+                // reset the divs
                 archivedCourseContainer.replaceChildren();
                 droppedCourseContainer.replaceChildren();
                 unarchivedCourseContainer.replaceChildren();
 
-                // update the lists
+                // update the divs
                 if(archived_courses.length === 0) {
                     const noCoursesMessage = document.createElement("p");
                     noCoursesMessage.textContent = "No archived courses available.";
@@ -99,12 +110,30 @@
             case "course":
                 const course = message.course;
                 const semester = message.semester;
+                const gradeables = message.gradeables;
+
+                // reset div
+                //gradeablesContainer.replaceChildren();
 
                 // show course, hide courses
                 coursesContainer.style.display = "none";
                 courseContainer.style.display = "block";
 
                 courseTitle.textContent = course + ", " + semester;
+
+                // update gradeable div
+                if(gradeables.length === 0) {
+                    const noGradeablesMessage = document.createElement("p");
+                    noGradeablesMessage.textContent = "No gradeables available for this course.";
+                    gradeablesContainer.appendChild(noGradeablesMessage);
+                }
+                gradeables.forEach(gradeable_id => {
+                    const button = document.createElement("button");
+                    button.textContent = gradeable_id;
+                    button.dataset.gradeable_id = gradeable_id;
+                    button.addEventListener("click", gradeableClicked);
+                    gradeablesContainer.appendChild(button);
+                });
 
                 break;
         }
