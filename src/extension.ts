@@ -172,6 +172,18 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+		this.context.globalState.update("state", undefined);
+		let state = this.context.globalState.get("state");
+		this.updateState(state, webviewView.webview);
+
+		webviewView.onDidChangeVisibility(() => {
+			if (webviewView.visible) {
+				// update state if global state is defined
+				let state = this.context.globalState.get("state");
+				this.updateState(state, webviewView.webview);
+			}
+		});
+
 		webviewView.webview.onDidReceiveMessage(async (message) => {
 			switch (message.type) {
                 case "login": {
@@ -184,6 +196,10 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					}
 					const courses = await vscode.commands.executeCommand('submitty.getCourses');
 					webviewView.webview.postMessage({ type: "courses", courses });
+
+					// update global state
+					await this.context.globalState.update("state", "login");
+
                     break;
                 }
 				case "course": {
@@ -195,6 +211,10 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					const gradeables = await vscode.commands.executeCommand('submitty.getGradeables');
 
 					webviewView.webview.postMessage({ type: "course", course, semester, gradeables });
+
+					// update global state
+					await this.context.globalState.update("state", "course");
+
 					break;
 				}
 			}
@@ -236,5 +256,24 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			<script src="${scriptUri}"></script>
         </body>
         </html>`;
+	}
+
+	private async updateState(state: any, webview: vscode.Webview) {
+		switch(state) {
+			case "login":
+				let token = await this.context.secrets.get("token");
+				if(!token) {
+					break;
+				}
+				const courses = await vscode.commands.executeCommand('submitty.getCourses');
+				webview.postMessage({ type: "courses", courses });
+				break;
+			case "course":
+				let course = await this.context.secrets.get("course");
+				let semester = await this.context.secrets.get("semester");
+				const gradeables = await vscode.commands.executeCommand('submitty.getGradeables');
+				webview.postMessage({ type: "course", course, semester, gradeables });
+				break;
+		}
 	}
 }

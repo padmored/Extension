@@ -53,9 +53,11 @@
             case "courses":
                 const { archived_courses, dropped_courses, unarchived_courses } = message.courses;
 
-                // show courses, hide login
+                // set visibility
                 loginContainer.style.display = "none";
                 coursesContainer.style.display = "block";
+                courseContainer.style.display = "none";
+                gradeablesContainer.style.display = "none";
 
                 // reset the divs
                 archivedCourseContainer.replaceChildren();
@@ -113,11 +115,13 @@
                 const gradeables = message.gradeables;
 
                 // reset div
-                //gradeablesContainer.replaceChildren();
+                gradeablesContainer.replaceChildren();
 
-                // show course, hide courses
+                // set visibility
+                loginContainer.style.display = "none";
                 coursesContainer.style.display = "none";
                 courseContainer.style.display = "block";
+                gradeablesContainer.style.display = "block";
 
                 courseTitle.textContent = course + ", " + semester;
 
