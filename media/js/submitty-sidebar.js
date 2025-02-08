@@ -3,6 +3,10 @@
 
     const login = document.querySelector('.login');
 
+    // returns
+    const returnCourses = document.querySelector('.return-courses');
+    const returnLogout = document.querySelector('.return-logout');
+
     // course data
     const courseTitle = document.querySelector('.course-title');
 
@@ -17,6 +21,24 @@
     const unarchivedCourseContainer = document.querySelector('.unarchived-course-container');
 
     login.addEventListener('click', loginClicked);
+
+    // return listeners and functions
+    returnCourses.addEventListener('click', returnCoursesClicked);
+    returnLogout.addEventListener('click', returnLogoutClicked);
+
+    function returnCoursesClicked() {
+        vscode.postMessage({
+            type: 'returnCourses',
+            value: 'clicked'
+        });
+    }
+
+    function returnLogoutClicked() {
+        vscode.postMessage({
+            type: 'returnLogout',
+            value: 'clicked'
+        });
+    }
 
     function loginClicked() {
         vscode.postMessage({
@@ -50,7 +72,22 @@
     window.addEventListener("message", async (event) => {
         const message = event.data;
         switch (message.type) {
-            case "courses":
+            case "logout": {
+                // set visibility
+                loginContainer.style.display = "block";
+                coursesContainer.style.display = "none";
+                courseContainer.style.display = "none";
+                gradeablesContainer.style.display = "none";
+
+                // reset containers
+                gradeablesContainer.replaceChildren();
+                archivedCourseContainer.replaceChildren();
+                droppedCourseContainer.replaceChildren();
+                unarchivedCourseContainer.replaceChildren();
+
+                break;
+            }
+            case "courses": {
                 const { archived_courses, dropped_courses, unarchived_courses } = message.courses;
 
                 // set visibility
@@ -108,8 +145,8 @@
                 });
 
                 break;
-
-            case "course":
+            }
+            case "course": {
                 const course = message.course;
                 const semester = message.semester;
                 const gradeables = message.gradeables;
@@ -140,6 +177,7 @@
                 });
 
                 break;
+            }
         }
     });
 

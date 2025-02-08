@@ -172,7 +172,9 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-		this.context.globalState.update("state", undefined);
+		// reset the state
+		//this.context.globalState.update("state", undefined);
+
 		let state = this.context.globalState.get("state");
 		this.updateState(state, webviewView.webview);
 
@@ -217,6 +219,20 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 					break;
 				}
+				case "returnCourses": {
+					// update global state
+					await this.context.globalState.update("state", "login");
+					let state = this.context.globalState.get("state");
+					this.updateState(state, webviewView.webview);
+					break;
+				}
+				case "returnLogout": {
+					// update global state
+					await this.context.globalState.update("state", "logout");
+					let state = this.context.globalState.get("state");
+					this.updateState(state, webviewView.webview);
+					break;
+				}
 			}
 		});
 	}
@@ -237,10 +253,11 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
         <body>
 			<div class="login-container" style="display: block;">
 				<p>Login to Submitty from the Submitty extension.</p>
-				<button type="button" class="login">Login</button>
+				<button type="button" class="login">login</button>
 			</div>
 			<div class="courses-container" style="display: none;">
 				<h1>My Courses</h1>
+				<button type="button" class="return-logout">logout</button>
 				<h2>Archived</h2>
 				<div class="archived-course-container"></div>
 				<h2>Dropped</h2>
@@ -250,6 +267,7 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			</div>
 			<div class="course-container" style="display: none;">
 				<h1 class="course-title">Course Name, Semester</h1>
+				<button type="button" class="return-courses">return</button>
 				<h2>Gradeables</h2>
 				<div class="gradeables-container"></div>
 			</div>
@@ -260,7 +278,7 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 	private async updateState(state: any, webview: vscode.Webview) {
 		switch(state) {
-			case "login":
+			case "login": {
 				let token = await this.context.secrets.get("token");
 				if(!token) {
 					break;
@@ -268,12 +286,20 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				const courses = await vscode.commands.executeCommand('submitty.getCourses');
 				webview.postMessage({ type: "courses", courses });
 				break;
-			case "course":
+			}
+			case "course": {
 				let course = await this.context.secrets.get("course");
 				let semester = await this.context.secrets.get("semester");
 				const gradeables = await vscode.commands.executeCommand('submitty.getGradeables');
 				webview.postMessage({ type: "course", course, semester, gradeables });
 				break;
+			}
+			case "logout": {
+				await this.context.secrets.delete("token");
+				webview.postMessage({ type: "logout" });
+				vscode.window.showInformationMessage("Token dropped");
+				await this.context.globalState.update("state", "login");
+			}	
 		}
 	}
 }
