@@ -163,15 +163,15 @@
                 courseTitle.textContent = course + ", " + semester;
 
                 // update gradeable div
-                if(gradeables.length === 0) {
+                if(Object.keys(gradeables).length === 0) {
                     const noGradeablesMessage = document.createElement("p");
                     noGradeablesMessage.textContent = "No gradeables available for this course.";
                     gradeablesContainer.appendChild(noGradeablesMessage);
                 }
-                gradeables.forEach(gradeable_id => {
+                Object.values(gradeables).forEach(gradeable => {
                     const button = document.createElement("button");
-                    button.textContent = gradeable_id;
-                    button.dataset.gradeable_id = gradeable_id;
+                    button.textContent = gradeable.title;
+                    button.dataset.gradeable_id = gradeable.id;
                     button.addEventListener("click", gradeableClicked);
                     gradeablesContainer.appendChild(button);
                 });

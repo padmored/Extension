@@ -134,7 +134,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// check if successful
 		const status = response.data.status;
 		if(status === 'success') {
-			return response.data.data[1] || [];
+			return response.data.data.gradeables || [];
 		}
 		else {
 			vscode.window.showWarningMessage(response.data.message);
@@ -217,6 +217,12 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					// update global state
 					await this.context.globalState.update("state", "course");
 
+					break;
+				}
+				case "gradeable": {
+					let gradeable_id = message.gradeable_id;
+					// TODO go to gradeable container
+					vscode.window.showWarningMessage(gradeable_id);
 					break;
 				}
 				case "returnCourses": {
