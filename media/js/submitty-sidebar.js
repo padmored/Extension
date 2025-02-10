@@ -4,17 +4,24 @@
     const login = document.querySelector('.login');
 
     // returns
+    const returnCourse = document.querySelector('.return-course')
     const returnCourses = document.querySelector('.return-courses');
     const returnLogout = document.querySelector('.return-logout');
 
     // course data
     const courseTitle = document.querySelector('.course-title');
 
+    // gradeable data
+    const gradeableTitle = document.querySelector('.gradeable-title');
+
     // containers
     const loginContainer = document.querySelector('.login-container');
     const coursesContainer = document.querySelector('.courses-container');
     const courseContainer = document.querySelector('.course-container');
     const gradeablesContainer = document.querySelector('.gradeables-container');
+    const gradeableContainer = document.querySelector('.gradeable-container');
+    const fileContainer = document.querySelector('.file-container');
+
     // course type lists
     const archivedCourseContainer = document.querySelector('.archived-course-container');
     const droppedCourseContainer = document.querySelector('.dropped-course-container');
@@ -23,8 +30,16 @@
     login.addEventListener('click', loginClicked);
 
     // return listeners and functions
+    returnCourse.addEventListener('click', returnCourseClicked);
     returnCourses.addEventListener('click', returnCoursesClicked);
     returnLogout.addEventListener('click', returnLogoutClicked);
+
+    function returnCourseClicked() {
+        vscode.postMessage({
+            type: 'returnCourse',
+            value: 'clicked'
+        });
+    }
 
     function returnCoursesClicked() {
         vscode.postMessage({
@@ -62,10 +77,12 @@
     function gradeableClicked(event) {
         const button = event.target;
         const gradeable_id = button.dataset.gradeable_id;
+        const gradeable_title = button.dataset.gradeable_title;
     
         vscode.postMessage({
             type: "gradeable",
-            gradeable_id: gradeable_id
+            gradeable_id: gradeable_id,
+            gradeable_title: gradeable_title
         });
     }
 
@@ -78,6 +95,7 @@
                 coursesContainer.style.display = "none";
                 courseContainer.style.display = "none";
                 gradeablesContainer.style.display = "none";
+                gradeableContainer.style.display = "none";
 
                 // reset containers
                 gradeablesContainer.replaceChildren();
@@ -95,6 +113,7 @@
                 coursesContainer.style.display = "block";
                 courseContainer.style.display = "none";
                 gradeablesContainer.style.display = "none";
+                gradeableContainer.style.display = "none";
 
                 // reset the divs
                 archivedCourseContainer.replaceChildren();
@@ -159,6 +178,7 @@
                 coursesContainer.style.display = "none";
                 courseContainer.style.display = "block";
                 gradeablesContainer.style.display = "block";
+                gradeableContainer.style.display = "none";
 
                 courseTitle.textContent = course + ", " + semester;
 
@@ -172,9 +192,48 @@
                     const button = document.createElement("button");
                     button.textContent = gradeable.title;
                     button.dataset.gradeable_id = gradeable.id;
+                    button.dataset.gradeable_title = gradeable.title;
                     button.addEventListener("click", gradeableClicked);
                     gradeablesContainer.appendChild(button);
                 });
+
+                break;
+            }
+            case "gradeable": {
+                const openFiles = message.openFiles;
+                const gradeable_title = message.gradeable_title;
+
+                // reset div
+                fileContainer.replaceChildren();
+
+                // set visibility
+                loginContainer.style.display = "none";
+                coursesContainer.style.display = "none";
+                courseContainer.style.display = "none";
+                gradeablesContainer.style.display = "none";
+                gradeableContainer.style.display = "block";
+
+                // update gradeableTitle
+                gradeableTitle.textContent = gradeable_title;
+
+                const fileDropdown = document.createElement("select");
+                fileDropdown.id = "fileDropdown";
+
+                const defaultOption = document.createElement("option");
+                defaultOption.textContent = "select an opened file";
+                defaultOption.value = "";
+                fileDropdown.appendChild(defaultOption);
+
+                // add files to dropdown
+                openFiles.forEach(filePath => {
+                    const option = document.createElement("option");
+                    const fileName = filePath.split(/[/\\]/).pop();
+                    option.textContent = fileName;
+                    option.value = filePath;
+                    fileDropdown.appendChild(option);
+                });
+
+                fileContainer.appendChild(fileDropdown);
 
                 break;
             }

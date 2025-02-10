@@ -221,8 +221,25 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				}
 				case "gradeable": {
 					let gradeable_id = message.gradeable_id;
-					// TODO go to gradeable container
-					vscode.window.showWarningMessage(gradeable_id);
+					let gradeable_title = message.gradeable_title;
+					// push gradeable_id and title to secrets
+					this.context.secrets.store("gradeable_id",gradeable_id);
+					this.context.secrets.store("gradeable_title",gradeable_title);
+					// retrieve open files in editor
+					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
+					
+					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles });
+
+					// update global state
+					await this.context.globalState.update("state", "gradeable");
+
+					break;
+				}
+				case "returnCourse": {
+					// update global state
+					await this.context.globalState.update("state", "course");
+					let state = this.context.globalState.get("state");
+					this.updateState(state, webviewView.webview);
 					break;
 				}
 				case "returnCourses": {
@@ -277,6 +294,14 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				<h2>Gradeables</h2>
 				<div class="gradeables-container"></div>
 			</div>
+			<div class="gradeable-container" style="display: none;">
+				<h1 class="gradeable-title">Gradeable Title</h1>
+				<button type="button" class="return-course">return</button>
+				<h2>Upload File</h2>
+				<div class="file-container"></div>
+				<button type="button" class="refresh-file-container">refresh</button>
+				<button type="button" class="upload-file">upload</button>
+			</div>
 			<script src="${scriptUri}"></script>
         </body>
         </html>`;
@@ -300,11 +325,18 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				webview.postMessage({ type: "course", course, semester, gradeables });
 				break;
 			}
+			case "gradeable": {
+				let gradeable_title = await this.context.secrets.get("gradeable_title");
+				const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
+				webview.postMessage({ type: "gradeable", gradeable_title, openFiles });
+				break;
+			}
 			case "logout": {
 				await this.context.secrets.delete("token");
 				webview.postMessage({ type: "logout" });
 				vscode.window.showInformationMessage("Token dropped");
 				await this.context.globalState.update("state", "login");
+				break;
 			}	
 		}
 	}

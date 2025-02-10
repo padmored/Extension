@@ -92,4 +92,24 @@ textarea::placeholder {
 
 div button {
 	margin: var(--input-padding-vertical);
-  }
+}
+
+select {
+	display: block;
+	width: 100%;
+	border: none;
+	font-family: var(--vscode-font-family);
+	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+	color: var(--vscode-input-foreground);
+	outline-color: var(--vscode-input-border);
+	background-color: var(--vscode-input-background);
+	margin: var(--input-padding-vertical);
+}
+
+select:focus {
+	outline-color: var(--vscode-focusBorder);
+}
+
+select::placeholder {
+	color: var(--vscode-input-placeholderForeground);
+}
