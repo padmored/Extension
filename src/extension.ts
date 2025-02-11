@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import axios from 'axios';
+import fs from 'fs';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -142,12 +143,72 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
+	let uploadFile = vscode.commands.registerCommand('submitty.uploadFile', async () => {
+		// get the stored token
+		let token = await context.secrets.get("token");
+
+		// validate token
+		if(!token) {
+			vscode.window.showWarningMessage("Token not found, attempting to get token");
+			await vscode.commands.executeCommand('submitty.getToken');
+			token = await context.secrets.get("token");
+			if (!token) {
+				vscode.window.showErrorMessage("Failed to get token.");
+				return [];
+			}
+		}
+
+		// fetch params for request from secrets
+		let user_id = await context.secrets.get("user_id");
+		let course = await context.secrets.get("course");
+		let semester = await context.secrets.get("semester");
+		let gradeable_id = await context.secrets.get("gradeable_id");
+		let file_path = await context.secrets.get("file_path");
+		let file_name = await context.secrets.get("file_name");
+
+		// Ensure file exists before reading
+		if(!file_path) {
+			vscode.window.showErrorMessage(`File not found`);
+			return;
+		}
+		if (!fs.existsSync(file_path)) {
+			vscode.window.showErrorMessage(`File not found: ${file_path}`);
+			return;
+		}
+	
+		// Create FormData
+		let formData = new FormData();
+		formData.append("user_id", user_id);
+		formData.append("course", course);
+		formData.append("semester", semester);
+		formData.append("gradeable_id", gradeable_id);
+		formData.append("file", fs.createReadStream(file_path)); // Append file
+
+		// make the POST req for token
+		const response = await axios.post('http://localhost:1511/api/test/upload/file', formData, {
+			headers: {
+                'Authorization': token,
+            }
+		});
+
+		// check if successful
+		const status = response.data.status;
+		if(status === 'success') {
+			vscode.window.showInformationMessage("File upload successful");	
+			return;
+		}
+		else {
+			vscode.window.showWarningMessage(response.data.message);
+		}
+	});
+
 	const provider = new SubmittyViewProvider(context.extensionUri, context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider('submitty-sidebar', provider));
 
 	context.subscriptions.push(getToken);
 	context.subscriptions.push(getCourses);
 	context.subscriptions.push(getGradeables);
+	context.subscriptions.push(uploadFile);
 }
 
 // This method is called when your extension is deactivated
@@ -173,7 +234,7 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
 		// reset the state
-		//this.context.globalState.update("state", undefined);
+		// this.context.globalState.update("state", undefined);
 
 		let state = this.context.globalState.get("state");
 		this.updateState(state, webviewView.webview);
@@ -233,6 +294,27 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					// update global state
 					await this.context.globalState.update("state", "gradeable");
 
+					break;
+				}
+				case "refreshFileContainer": {
+					let gradeable_title = await this.context.secrets.get("gradeable_title");
+					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
+					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles });
+					break;
+				}
+				case "uploadFile": {
+					if(!message.filePath) {
+						vscode.window.showWarningMessage("No file selected");
+						break;
+					}
+					let filePath = message.filePath;
+					let fileName = message.fileName;
+
+					await this.context.secrets.store("file_path",filePath);
+					await this.context.secrets.store("file_name",fileName);
+
+					vscode.window.showInformationMessage("Attempting to upload " + fileName);
+					await vscode.commands.executeCommand('submitty.uploadFile');
 					break;
 				}
 				case "returnCourse": {

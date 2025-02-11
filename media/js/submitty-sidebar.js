@@ -10,6 +10,8 @@
 
     // course data
     const courseTitle = document.querySelector('.course-title');
+    const refreshFileContainer = document.querySelector('.refresh-file-container');
+    const uploadFile = document.querySelector('.upload-file');
 
     // gradeable data
     const gradeableTitle = document.querySelector('.gradeable-title');
@@ -28,6 +30,8 @@
     const unarchivedCourseContainer = document.querySelector('.unarchived-course-container');
 
     login.addEventListener('click', loginClicked);
+    refreshFileContainer.addEventListener('click', refreshFileContainerClicked);
+    uploadFile.addEventListener('click', uploadFileClicked);
 
     // return listeners and functions
     returnCourse.addEventListener('click', returnCourseClicked);
@@ -59,6 +63,25 @@
         vscode.postMessage({
             type: 'login',
             value: 'clicked'
+        });
+    }
+
+    function refreshFileContainerClicked() {
+        vscode.postMessage({
+            type: 'refreshFileContainer',
+            value: 'clicked'
+        });
+    }
+
+    function uploadFileClicked() {
+        const fileDropdown = document.querySelector('#fileDropdown');
+        const selectedFilePath = fileDropdown.value;
+        const selectedFileName = selectedFilePath.split(/[/\\]/).pop();
+
+        vscode.postMessage({
+            type: 'uploadFile',
+            filePath: selectedFilePath,
+            fileName: selectedFileName
         });
     }
 
