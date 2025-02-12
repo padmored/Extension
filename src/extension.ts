@@ -175,6 +175,9 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showErrorMessage(`File not found: ${file_path}`);
 			return;
 		}
+
+		const fileBuffer = fs.readFileSync(file_path);
+		const fileBlob = new Blob([fileBuffer]);
 	
 		// Create FormData
 		let formData = new FormData();
@@ -182,7 +185,7 @@ export function activate(context: vscode.ExtensionContext) {
 		formData.append("course", course);
 		formData.append("semester", semester);
 		formData.append("gradeable_id", gradeable_id);
-		formData.append("file", fs.createReadStream(file_path)); // Append file
+		formData.append("file", fileBlob, file_name);
 
 		// make the POST req for token
 		const response = await axios.post('http://localhost:1511/api/test/upload/file', formData, {
