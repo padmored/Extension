@@ -103,7 +103,7 @@ select {
 	color: var(--vscode-input-foreground);
 	outline-color: var(--vscode-input-border);
 	background-color: var(--vscode-input-background);
-	margin: var(--input-padding-vertical);
+	
 }
 
 select:focus {
@@ -112,4 +112,20 @@ select:focus {
 
 select::placeholder {
 	color: var(--vscode-input-placeholderForeground);
+}
+
+.inline {
+	display: flex;
+	width: 100%;
+	margin: var(--input-padding-vertical);
+}
+
+.file-container {
+    flex: 4;
+	margin-right: 10px;
+}
+
+.refresh-file-container {
+    flex: 1;
+	margin: 0;
 }
