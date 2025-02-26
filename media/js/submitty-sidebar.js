@@ -22,6 +22,7 @@
     const courseContainer = document.querySelector('.course-container');
     const gradeablesContainer = document.querySelector('.gradeables-container');
     const gradeableContainer = document.querySelector('.gradeable-container');
+    const gradeableVersionContainer = document.querySelector('.gradeable-version-container');
     const fileContainer = document.querySelector('.file-container');
 
     // course type lists
@@ -225,9 +226,11 @@
             case "gradeable": {
                 const openFiles = message.openFiles;
                 const gradeable_title = message.gradeable_title;
+                const versionData = message.versionData;
 
                 // reset div
                 fileContainer.replaceChildren();
+                gradeableVersionContainer.replaceChildren();
 
                 // set visibility
                 loginContainer.style.display = "none";
@@ -238,6 +241,16 @@
 
                 // update gradeableTitle
                 gradeableTitle.textContent = gradeable_title;
+
+                // update gradeableVersion
+                const versionMessage = document.createElement("p");
+                if(versionData[1] === 0) {
+                    versionMessage.textContent = "No previous submission versions.";
+                }
+                else {
+                    versionMessage.textContent = "You have " + versionData[1] + " submission version(s).";
+                }
+                gradeableVersionContainer.appendChild(versionMessage);
 
                 const fileDropdown = document.createElement("select");
                 fileDropdown.id = "fileDropdown";
