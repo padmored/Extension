@@ -23,6 +23,7 @@
     const gradeablesContainer = document.querySelector('.gradeables-container');
     const gradeableContainer = document.querySelector('.gradeable-container');
     const gradeableVersionContainer = document.querySelector('.gradeable-version-container');
+    const gradeableDueDateContainer = document.querySelector('.gradeable-due-date-container');
     const fileContainer = document.querySelector('.file-container');
 
     // course type lists
@@ -96,6 +97,30 @@
             course: course,
             semester: semester
         });
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+
+        const day = date.getUTCDate();
+        const month = date.toLocaleString('en-US', { month: 'long' });
+        const year = date.getUTCFullYear();
+        const hours = date.getUTCHours().toString().padStart(2, '0');
+        const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+
+        const ordinalSuffix = (n) => {
+            if (n > 3 && n < 21) {
+                return "th";
+            }
+            switch (n % 10) {
+                case 1: return "st";
+                case 2: return "nd";
+                case 3: return "rd";
+                default: return "th";
+            }
+        };
+
+        return `${day}${ordinalSuffix(day)} ${month} ${year} at ${hours}:${minutes}`;
     }
 
     function gradeableClicked(event) {
@@ -226,11 +251,12 @@
             case "gradeable": {
                 const openFiles = message.openFiles;
                 const gradeable_title = message.gradeable_title;
-                const versionData = message.versionData;
+                const gradeableData = message.gradeableData;
 
                 // reset div
                 fileContainer.replaceChildren();
                 gradeableVersionContainer.replaceChildren();
+                gradeableDueDateContainer.replaceChildren();
 
                 // set visibility
                 loginContainer.style.display = "none";
@@ -242,13 +268,18 @@
                 // update gradeableTitle
                 gradeableTitle.textContent = gradeable_title;
 
+                // update the gradeableDueDate
+                const dueDateMessage = document.createElement("p");
+                dueDateMessage.textContent = formatDate(gradeableData.due_date.date);
+                gradeableDueDateContainer.appendChild(dueDateMessage);
+
                 // update gradeableVersion
                 const versionMessage = document.createElement("p");
-                if(versionData[1] === 0) {
+                if(gradeableData.version === 0) {
                     versionMessage.textContent = "No previous submission versions.";
                 }
                 else {
-                    versionMessage.textContent = "You have " + versionData[1] + " submission version(s).";
+                    versionMessage.textContent = "You have " + gradeableData.version + " submission version(s).";
                 }
                 gradeableVersionContainer.appendChild(versionMessage);
 

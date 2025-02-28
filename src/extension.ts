@@ -143,7 +143,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	let getGradeableVersionData = vscode.commands.registerCommand('submitty.getGradeableVersionData', async () => {
+	let getGradeableData = vscode.commands.registerCommand('submitty.getGradeableData', async () => {
 		// get the stored token
 		let token = await context.secrets.get("token");
 
@@ -165,7 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let gradeable_id = await context.secrets.get("gradeable_id");
 
 		// make the GET req for gradeables
-		const response = await axios.get('http://localhost:1511/api/test/get/gradeable/version', {
+		const response = await axios.get('http://localhost:1511/api/test/get/gradeable/data', {
 			headers: { Authorization: token },
 			params: {
 				user_id: user_id,
@@ -254,7 +254,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(getToken);
 	context.subscriptions.push(getCourses);
 	context.subscriptions.push(getGradeables);
-	context.subscriptions.push(getGradeableVersionData);
+	context.subscriptions.push(getGradeableData);
 	context.subscriptions.push(uploadFile);
 }
 
@@ -280,7 +280,7 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-		// reset the state
+		// reset the state (debug)
 		// this.context.globalState.update("state", undefined);
 
 		let state = this.context.globalState.get("state");
@@ -336,10 +336,10 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					// retrieve open files in editor
 					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
 
-					// get version data from gradeable
-					const versionData = await vscode.commands.executeCommand('submitty.getGradeableVersionData');
+					// get data from gradeable
+					const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
 
-					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, versionData });
+					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
 
 					// update global state
 					await this.context.globalState.update("state", "gradeable");
@@ -349,8 +349,8 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				case "refreshFileContainer": {
 					let gradeable_title = await this.context.secrets.get("gradeable_title");
 					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
-					const versionData = await vscode.commands.executeCommand('submitty.getGradeableVersionData');
-					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, versionData });
+					const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
+					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
 					break;
 				}
 				case "uploadFile": {
@@ -370,8 +370,8 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 					// refreshFileContainer call
 					let gradeable_title = await this.context.secrets.get("gradeable_title");
 					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
-					const versionData = await vscode.commands.executeCommand('submitty.getGradeableVersionData');
-					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, versionData });
+					const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
+					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
 					break;
 				}
 				case "returnCourse": {
@@ -436,7 +436,8 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			<div class="gradeable-container" style="display: none;">
 				<h1 class="gradeable-title">Gradeable Title</h1>
 				<button type="button" class="return-course">return</button>
-				<h2>Version Information</h2>
+				<h2>Gradeable Information</h2>
+				<div class="gradeable-due-date-container"></div>
 				<div class="gradeable-version-container"></div>
 				<h2>Upload File</h2>
 				<div class="inline">
@@ -471,8 +472,8 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 			case "gradeable": {
 				let gradeable_title = await this.context.secrets.get("gradeable_title");
 				const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
-				const versionData = await vscode.commands.executeCommand('submitty.getGradeableVersionData');
-				webview.postMessage({ type: "gradeable", gradeable_title, openFiles, versionData });
+				const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
+				webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
 				break;
 			}
 			case "logout": {
