@@ -348,6 +348,9 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				}
 				case "refreshFileContainer": {
 					let gradeable_title = await this.context.secrets.get("gradeable_title");
+					// polling (debug)
+					//let pollingDelay = message.value;
+					//vscode.window.showInformationMessage(`fetching gradeable data after (${pollingDelay})`);
 					const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
 					const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
 					webviewView.webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
@@ -439,6 +442,7 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				<h2>Gradeable Information</h2>
 				<div class="gradeable-due-date-container"></div>
 				<div class="gradeable-version-container"></div>
+				<div class="gradeable-grading-container"></div>
 				<h2>Upload File</h2>
 				<div class="inline">
 					<div class="file-container"></div>
@@ -466,14 +470,18 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				let course = await this.context.secrets.get("course");
 				let semester = await this.context.secrets.get("semester");
 				const gradeables = await vscode.commands.executeCommand('submitty.getGradeables');
-				webview.postMessage({ type: "course", course, semester, gradeables });
+				if(gradeables !== undefined) {
+					webview.postMessage({ type: "course", course, semester, gradeables });
+				}
 				break;
 			}
 			case "gradeable": {
 				let gradeable_title = await this.context.secrets.get("gradeable_title");
 				const openFiles = vscode.workspace.textDocuments.map(doc => doc.fileName);
 				const gradeableData = await vscode.commands.executeCommand('submitty.getGradeableData');
-				webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
+				if(gradeableData !== undefined) {
+					webview.postMessage({ type: "gradeable", gradeable_title, openFiles, gradeableData });
+				}
 				break;
 			}
 			case "logout": {

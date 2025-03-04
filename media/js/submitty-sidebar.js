@@ -24,6 +24,7 @@
     const gradeableContainer = document.querySelector('.gradeable-container');
     const gradeableVersionContainer = document.querySelector('.gradeable-version-container');
     const gradeableDueDateContainer = document.querySelector('.gradeable-due-date-container');
+    const gradeableGradingContainer = document.querySelector('.gradeable-grading-container');
     const fileContainer = document.querySelector('.file-container');
 
     // course type lists
@@ -39,6 +40,12 @@
     returnCourse.addEventListener('click', returnCourseClicked);
     returnCourses.addEventListener('click', returnCoursesClicked);
     returnLogout.addEventListener('click', returnLogoutClicked);
+
+    // polling delay
+    let pollingDelay = 3000;
+    const minPollingDelay = 3000;   // 3 seconds
+    const maxPollingDelay = 60000;  // 1 minute 
+    let previousPollingState = "";
 
     function returnCourseClicked() {
         vscode.postMessage({
@@ -71,7 +78,7 @@
     function refreshFileContainerClicked() {
         vscode.postMessage({
             type: 'refreshFileContainer',
-            value: 'clicked'
+            value: pollingDelay
         });
     }
 
@@ -133,6 +140,27 @@
             gradeable_id: gradeable_id,
             gradeable_title: gradeable_title
         });
+    }
+
+    function adjustPollingDelay(gradeableData) {
+        let currentPollingState = "";
+        
+        if(gradeableData.is_queued) {
+            currentPollingState = "queued";
+        }
+        else {
+            currentPollingState = "grading";
+        }
+
+        // adjust poll
+        if(previousPollingState === currentPollingState) {
+            pollingDelay = Math.min(pollingDelay * 2, maxPollingDelay);
+        }
+        else {
+            pollingDelay = minPollingDelay;
+        }
+
+        previousPollingState = currentPollingState;
     }
 
     window.addEventListener("message", async (event) => {
@@ -257,6 +285,7 @@
                 fileContainer.replaceChildren();
                 gradeableVersionContainer.replaceChildren();
                 gradeableDueDateContainer.replaceChildren();
+                gradeableGradingContainer.replaceChildren();
 
                 // set visibility
                 loginContainer.style.display = "none";
@@ -280,6 +309,29 @@
                 }
                 else {
                     versionMessage.textContent = "You have " + gradeableData.version + " submission version(s).";
+                    const gradingMessage = document.createElement("p");
+                    const gradingMessagePrefix = `Version ${gradeableData.version}: `;
+
+                    // update version status (queued, grading, graded)
+                    if(gradeableData.is_queued) {
+                        gradingMessage.textContent = gradingMessagePrefix + "queued";
+                        adjustPollingDelay(gradeableData);
+                        setTimeout(refreshFileContainerClicked, pollingDelay);
+                    }
+                    else if(gradeableData.is_grading) {
+                        gradingMessage.textContent = gradingMessagePrefix + "grading";
+                        adjustPollingDelay(gradeableData);
+                        setTimeout(refreshFileContainerClicked, pollingDelay);
+                    }
+                    else if(gradeableData.total_percent === 0){
+                        gradingMessage.textContent = gradingMessagePrefix + "graded";
+                    }
+                    else {
+                        const totalPossiblePoints = gradeableData.total_points / gradeableData.total_percent;
+                        gradingMessage.textContent = gradingMessagePrefix + `graded (${gradeableData.total_points} of ${totalPossiblePoints})`;
+                    }
+                    gradeableGradingContainer.appendChild(gradingMessage);
+
                 }
                 gradeableVersionContainer.appendChild(versionMessage);
 
