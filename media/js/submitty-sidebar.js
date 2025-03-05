@@ -130,6 +130,26 @@
         return `${day}${ordinalSuffix(day)} ${month} ${year} at ${hours}:${minutes}`;
     }
 
+    function formatQueuePosition(queue_position) {
+        const ordinalSuffix = (n) => {
+            if (n > 3 && n < 21) {
+                return "th";
+            }
+            switch (n % 10) {
+                case 1: return "st";
+                case 2: return "nd";
+                case 3: return "rd";
+                default: return "th";
+            }
+        };
+
+        if(queue_position === -1) {
+            return `queued`;
+        }
+
+        return `${queue_position}${ordinalSuffix(queue_position)} in queue`;
+    }
+
     function gradeableClicked(event) {
         const button = event.target;
         const gradeable_id = button.dataset.gradeable_id;
@@ -314,7 +334,7 @@
 
                     // update version status (queued, grading, graded)
                     if(gradeableData.is_queued) {
-                        gradingMessage.textContent = gradingMessagePrefix + "queued";
+                        gradingMessage.textContent = gradingMessagePrefix + formatQueuePosition(gradeableData.queue_position);
                         adjustPollingDelay(gradeableData);
                         setTimeout(refreshFileContainerClicked, pollingDelay);
                     }
