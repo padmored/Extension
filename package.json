@@ -27,6 +27,16 @@
         "command": "submitty.getGradeables",
         "title": "Get Gradeables",
         "category": "Submitty"
+      },
+      {
+        "command": "submitty.getGradeableData",
+        "title": "Get Gradeable Data",
+        "category": "Submitty"
+      },
+      {
+        "command": "submitty.uploadFile",
+        "title": "Upload Submission",
+        "category": "Submitty"
       }
     ],
     "viewsContainers": {
@@ -54,11 +64,12 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test --extensionDevelopmentPath=. --extensionTestsPath=out/test/extension.test.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/sinon": "^17.0.4",
     "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
@@ -68,6 +79,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "axios": "^1.7.9"
+    "axios": "^1.7.9",
+    "sinon": "^19.0.2"
   }
 }
