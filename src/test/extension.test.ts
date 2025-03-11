@@ -92,7 +92,6 @@ suite('Extension Test Suite', () => {
         assert.strictEqual(showWarningMessageStub.firstCall.args[0], expectedResponse);
     });
 
-	// test calling getCourses commands Valid
 	test('Test Calling Command getCourses Valid', async () => {
         const testUsername = 'student';
         const testPassword = 'student';
@@ -105,6 +104,37 @@ suite('Extension Test Suite', () => {
         assert.ok(response, "Response data is undefined");
     });
 
+    test('Test Calling Command getGradeables', async () => {
 
+        const testUsername = 'student';
+        const testPassword = 'student';
+
+        showInputBoxStub.onFirstCall().resolves(testUsername);
+        showInputBoxStub.onSecondCall().resolves(testPassword);
+
+        await vscode.commands.executeCommand('submitty.getGradeables');
+    });
+
+    test('Test Calling Command getGradeableData', async () => {
+
+        const testUsername = 'student';
+        const testPassword = 'student';
+
+        showInputBoxStub.onFirstCall().resolves(testUsername);
+        showInputBoxStub.onSecondCall().resolves(testPassword);
+
+        await vscode.commands.executeCommand('submitty.getGradeableData');
+    });
+
+    test('Test Calling Command uploadFile', async () => {
+
+        const testUsername = 'student';
+        const testPassword = 'student';
+
+        showInputBoxStub.onFirstCall().resolves(testUsername);
+        showInputBoxStub.onSecondCall().resolves(testPassword);
+
+        await vscode.commands.executeCommand('submitty.uploadFile');
+    });
 
 });
