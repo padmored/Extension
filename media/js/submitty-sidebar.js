@@ -330,7 +330,7 @@
                 else {
                     versionMessage.textContent = "You have " + gradeableData.version + " submission version(s).";
                     const gradingMessage = document.createElement("p");
-                    const gradingMessagePrefix = `Version ${gradeableData.version}: `;
+                    const gradingMessagePrefix = `Your highest version (${gradeableData.version}) is `;
 
                     // update version status (queued, grading, graded)
                     if(gradeableData.is_queued) {

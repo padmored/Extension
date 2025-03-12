@@ -440,9 +440,11 @@ class SubmittyViewProvider implements vscode.WebviewViewProvider {
 				<h1 class="gradeable-title">Gradeable Title</h1>
 				<button type="button" class="return-course">return</button>
 				<h2>Gradeable Information</h2>
-				<div class="gradeable-due-date-container"></div>
-				<div class="gradeable-version-container"></div>
-				<div class="gradeable-grading-container"></div>
+				<div class="gradeable-information-container">
+					<div class="gradeable-due-date-container"></div>
+					<div class="gradeable-version-container"></div>
+					<div class="gradeable-grading-container"></div>
+				</div>
 				<h2>Upload File</h2>
 				<div class="inline">
 					<div class="file-container"></div>

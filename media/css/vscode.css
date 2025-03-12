@@ -120,6 +120,33 @@ select::placeholder {
 	margin: var(--input-padding-vertical);
 }
 
+.gradeable-information-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	width: 100%;
+	margin-left: var(--input-padding-vertical);
+}
+
+.gradeable-due-date-container {
+	background-color: var(--vscode-input-background);
+	margin-bottom: 6px;
+	padding-left: 10px;
+}
+
+.gradeable-version-container {
+	background-color: var(--vscode-input-background);
+	margin-bottom: 6px;
+	padding-left: 10px;
+}
+
+.gradeable-grading-container {
+	background-color: var(--vscode-input-background);
+	margin-bottom: 6px;
+	padding-left: 10px;
+}
+
+
 .file-container {
     flex: 4;
 	margin-right: 10px;
