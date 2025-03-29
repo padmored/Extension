@@ -12,6 +12,10 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "submitty" is now active!');
 
+	// urls
+	const API_URL = 'https://subdev.scss.tcd.ie';
+	//const API_URL = 'http://localhost:1511';
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -48,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
 			// make the POST req for token
-            const response = await axios.post('http://localhost:1511/api/token', {
+            const response = await axios.post(API_URL + '/api/token', {
                 user_id: userId,
                 password: password,
             });
@@ -87,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// make the GET req for courses
-		const response = await axios.get('http://localhost:1511/api/courses', {
+		const response = await axios.get(API_URL + '/api/courses', {
 			headers: { Authorization: token }
 		});
 
@@ -123,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let semester = await context.secrets.get("semester");
 
 		// make the GET req for gradeables
-		const response = await axios.get('http://localhost:1511/api/test/get/gradeables', {
+		const response = await axios.get(API_URL + '/api/test/get/gradeables', {
 			headers: { Authorization: token },
 			params: {
 				user_id: user_id,
@@ -165,7 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let gradeable_id = await context.secrets.get("gradeable_id");
 
 		// make the GET req for gradeables
-		const response = await axios.get('http://localhost:1511/api/test/get/gradeable/data', {
+		const response = await axios.get(API_URL + '/api/test/get/gradeable/data', {
 			headers: { Authorization: token },
 			params: {
 				user_id: user_id,
@@ -231,7 +235,7 @@ export function activate(context: vscode.ExtensionContext) {
 		formData.append("file", fileBlob, file_name);
 
 		// make the POST req for token
-		const response = await axios.post('http://localhost:1511/api/test/upload/file', formData, {
+		const response = await axios.post(API_URL + '/api/test/upload/file', formData, {
 			headers: {
                 'Authorization': token,
             }
