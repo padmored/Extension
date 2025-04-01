@@ -12,9 +12,8 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "submitty" is now active!');
 
-	// urls
-	const API_URL = 'https://subdev.scss.tcd.ie';
-	//const API_URL = 'http://localhost:1511';
+	// reset api_url (debug)
+	// context.globalState.update("api_url", undefined);
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -23,6 +22,22 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		try {
+
+			// ensure API_URL is set
+			let global_api_url = await context.globalState.get("api_url");
+			if(!global_api_url) {
+				// get URL
+				const api_url = await vscode.window.showInputBox({
+					prompt: "Enter your Submitty URL",
+					placeHolder: "https://example.com",
+					ignoreFocusOut: true
+				});
+				if(!api_url) {
+					vscode.window.showWarningMessage("Submitty URL required");
+					return;
+				}
+				await context.globalState.update("api_url", api_url);
+			}
 
 			// get user id
 			const userId = await vscode.window.showInputBox({
@@ -51,8 +66,9 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
 
+			let submitty_url = await context.globalState.get("api_url");
 			// make the POST req for token
-            const response = await axios.post(API_URL + '/api/token', {
+            const response = await axios.post(submitty_url + '/api/token', {
                 user_id: userId,
                 password: password,
             });
@@ -71,6 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
             
         } catch (error) {
             vscode.window.showErrorMessage(`${error}`);
+			context.globalState.update("api_url", undefined);
         }
 	});
 
@@ -90,8 +107,9 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
+		let submitty_url = await context.globalState.get("api_url");
 		// make the GET req for courses
-		const response = await axios.get(API_URL + '/api/courses', {
+		const response = await axios.get(submitty_url + '/api/courses', {
 			headers: { Authorization: token }
 		});
 
@@ -126,8 +144,9 @@ export function activate(context: vscode.ExtensionContext) {
 		let course = await context.secrets.get("course");
 		let semester = await context.secrets.get("semester");
 
+		let submitty_url = await context.globalState.get("api_url");
 		// make the GET req for gradeables
-		const response = await axios.get(API_URL + '/api/test/get/gradeables', {
+		const response = await axios.get(submitty_url + '/api/test/get/gradeables', {
 			headers: { Authorization: token },
 			params: {
 				user_id: user_id,
@@ -168,8 +187,9 @@ export function activate(context: vscode.ExtensionContext) {
 		let semester = await context.secrets.get("semester");
 		let gradeable_id = await context.secrets.get("gradeable_id");
 
+		let submitty_url = await context.globalState.get("api_url");
 		// make the GET req for gradeables
-		const response = await axios.get(API_URL + '/api/test/get/gradeable/data', {
+		const response = await axios.get(submitty_url + '/api/test/get/gradeable/data', {
 			headers: { Authorization: token },
 			params: {
 				user_id: user_id,
@@ -234,8 +254,9 @@ export function activate(context: vscode.ExtensionContext) {
 		formData.append("gradeable_id", gradeable_id);
 		formData.append("file", fileBlob, file_name);
 
+		let submitty_url = await context.globalState.get("api_url");
 		// make the POST req for token
-		const response = await axios.post(API_URL + '/api/test/upload/file', formData, {
+		const response = await axios.post(submitty_url + '/api/test/upload/file', formData, {
 			headers: {
                 'Authorization': token,
             }
