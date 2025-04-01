@@ -2,6 +2,7 @@
   "name": "submitty",
   "displayName": "Submitty",
   "description": "",
+  "publisher":"padmored-submitty",
   "icon": "./media/moorthy_duck.png",
   "version": "0.0.1",
   "engines": {
