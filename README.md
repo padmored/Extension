@@ -16,5 +16,9 @@ https://submitty.org/index/overview
 
 ## Release Notes
 
-### 1.0
-Initial release of the Submitty extension. 
+### 0.01
+Initial release of the Submitty extension.
+
+### 0.02
+VSCode versions 1.92.2 and later are now compatible with the extension.
+- 'method not allowed' bug fix for incorrect submission url
