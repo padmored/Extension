@@ -83,6 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			else {
 				vscode.window.showWarningMessage(response.data.message);
+				context.globalState.update("api_url", undefined);
 			}
             
         } catch (error) {
