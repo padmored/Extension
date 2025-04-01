@@ -319,7 +319,7 @@
 
                 // update the gradeableDueDate
                 const dueDateMessage = document.createElement("p");
-                dueDateMessage.textContent = formatDate(gradeableData.due_date.date);
+                dueDateMessage.textContent = "Deadline " + formatDate(gradeableData.due_date.date);
                 gradeableDueDateContainer.appendChild(dueDateMessage);
 
                 // update gradeableVersion
@@ -348,7 +348,7 @@
                     }
                     else {
                         const totalPossiblePoints = gradeableData.total_points / gradeableData.total_percent;
-                        gradingMessage.textContent = gradingMessagePrefix + `graded (${gradeableData.total_points} of ${totalPossiblePoints})`;
+                        gradingMessage.textContent = gradingMessagePrefix + `graded (${gradeableData.total_points} of ${totalPossiblePoints}).`;
                     }
                     gradeableGradingContainer.appendChild(gradingMessage);
 
