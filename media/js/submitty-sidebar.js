@@ -132,7 +132,7 @@
 
     function formatQueuePosition(queue_position) {
         const ordinalSuffix = (n) => {
-            if (n > 3 && n < 21) {
+            if (n % 100 >= 11 && n % 100 <= 13) {
                 return "th";
             }
             switch (n % 10) {
